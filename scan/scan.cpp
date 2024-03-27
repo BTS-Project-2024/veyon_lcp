@@ -125,7 +125,7 @@ void scan::scanMACIP(string nomNetbios)
     std::stringstream transformed_mac;
 
     // Iterate over each character pair and add ":" after each pair
-    for (int i = 0; i < macAddress.length(); i += 3) {
+    for (unsigned long long i = 0; i < macAddress.length(); i += 3) {
       transformed_mac << macAddress.substr(i, 2);
       if (i < macAddress.length() - 2) {
         transformed_mac << ":";
