@@ -3,9 +3,10 @@
 
 using namespace std;
 
+
 int main() {
 
-    scan test;
+    scan test(50, "A402");
     test.scanMACIP("ASUSPM");
 
     return 0;

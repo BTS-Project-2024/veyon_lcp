@@ -4,20 +4,9 @@
 #include <cstdlib>
 #include <regex>
 #include <sstream>
+#include <thread>
 
 using namespace std;
-
-scan::scan()
-{
-
-}
-
-
-string scan::getSalle()
-{
-    cout << salle << endl;
-    return salle;
-}
 
 string scan::getMACOutput(string nomNetbios) {
     // Open a pipe for reading the command output
@@ -85,7 +74,7 @@ vector<pair<string, string>> scan::getIPOutput() {
 }
 
 
-void scan::scanMACIP(string nomNetbios)
+bool scan::scanMACIP(string nomNetbios)
 {
 
     // Commande NBTSTAT avec le nom de l'ordinateur au choix
@@ -124,23 +113,40 @@ void scan::scanMACIP(string nomNetbios)
 
     std::stringstream transformed_mac;
 
-    // Iterate over each character pair and add ":" after each pair
+    // Interroge chaque paire de caractères et ajouter " :" après chaque paire.
     for (unsigned long long i = 0; i < macAddress.length(); i += 3) {
-      transformed_mac << macAddress.substr(i, 2);
-      if (i < macAddress.length() - 2) {
-        transformed_mac << ":";
-      }
+        transformed_mac << macAddress.substr(i, 2);
+        if (i < macAddress.length() - 2) {
+            transformed_mac << ":";
+        }
     }
 
     // Réponse finale du résultat de la méthode (Adresse MAC trouvée ou non)
     if (!ipAddress.empty()) {
-        cout << "Ordinateur: " << nomNetbios << " | Adresse MAC: " << transformed_mac.str() << " | Adresse IP: " << ipAddress << endl;
+        cout << "Computer: " << nomNetbios << " | MAC Address: " << transformed_mac.str() << " | IP Address: " << ipAddress << endl;
+        // Tableau à retourner
+        string scanMACIPArray[3];
+        scanMACIPArray[0] = nomNetbios;
+        scanMACIPArray[1] = transformed_mac.str();
+        scanMACIPArray[2] = ipAddress;
+        return true;
     } else {
-        cout << "L'adresse MAC " << transformed_mac.str() << " n'a pas ete trouvee." << endl;
+        cout << "No info found about \"" << nomNetbios << "\"" << endl;
+        return false;
     }
+
 }
 
-void scan::setSalle(string salle)
-{
-    this->salle=salle;
+scan::scan(int maxPC, string salle) {
+
+    for (int i = 1; i <= maxPC; ++i) {
+        string nomposte;
+        if (i < 10) {
+            nomposte = salle + "-P" + "0" + to_string(i);
+        } else {
+            nomposte = salle + "-P" + to_string(i);
+        }
+        scanMACIP(nomposte);
+    }
+
 }

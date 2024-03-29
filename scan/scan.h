@@ -9,17 +9,14 @@ using namespace std;
 class scan
 {
 private:
-    string salle;
-    string* list_temp;
-    string* list_salle;
-    string nomNetbios;
+    string** list_temp;
     bool endScan;
     string getMACOutput(string nomNetbios);
     vector<pair<string, string>> getIPOutput();
 public:
-    scan();
+    scan(int maxPC, string salle);
     string getSalle();
-    void scanMACIP(string salle);
+    bool scanMACIP(string salle);
     string sendRequete(string nomNetBios);
     void setSalle(string salle);
 };
