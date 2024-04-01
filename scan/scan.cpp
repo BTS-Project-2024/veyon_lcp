@@ -139,6 +139,9 @@ bool scan::scanMACIP(string nomNetbios)
 
 scan::scan(int maxPC, string salle) {
 
+
+    int scanError = 0;
+
     for (int i = 1; i <= maxPC; ++i) {
         string nomposte;
         if (i < 10) {
@@ -146,7 +149,17 @@ scan::scan(int maxPC, string salle) {
         } else {
             nomposte = salle + "-P" + to_string(i);
         }
-        scanMACIP(nomposte);
-    }
 
+        if (!scanMACIP(nomposte)) {
+            scanError++;
+            if (scanError >= 3) {
+                cout << "Scanning has failed three times. Terminating program." << endl;
+                i = maxPC;
+            }
+        }
+        else {
+            scanError = 0;
+        }
+
+    }
 }
