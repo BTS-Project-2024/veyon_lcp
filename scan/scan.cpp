@@ -5,6 +5,7 @@
 #include <regex>
 #include <sstream>
 #include <thread>
+#include <mutex>
 
 using namespace std;
 
@@ -121,14 +122,19 @@ bool scan::scanMACIP(string nomNetbios)
         }
     }
 
+    // Déclaration de mutex
+    std::mutex mtx;
+
     // Réponse finale du résultat de la méthode (Adresse MAC trouvée ou non)
     if (!ipAddress.empty()) {
         cout << "Computer: " << nomNetbios << " | MAC Address: " << transformed_mac.str() << " | IP Address: " << ipAddress << endl;
-        // Tableau à retourner
+        // Tableau à retourner avec mutex
+        mtx.lock();
         string scanMACIPArray[3];
         scanMACIPArray[0] = nomNetbios;
         scanMACIPArray[1] = transformed_mac.str();
         scanMACIPArray[2] = ipAddress;
+        mtx.unlock();
         return true;
     } else {
         cout << "No info found about \"" << nomNetbios << "\"" << endl;
