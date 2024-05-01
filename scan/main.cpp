@@ -1,13 +1,28 @@
+#include <QCoreApplication>
 #include <iostream>
+#include <thread>
+#include <windows.h>
 #include "scan.h"
 
 using namespace std;
 
 
-int main() {
+int main(int argc, char *argv[]) {
 
-    scan test(50, "A402");
-    test.scanMACIP("ASUSPM");
+    QCoreApplication a(argc, argv);
 
-    return 0;
+    scan * tabThread[100];
+
+    for(int i=0; i<99; i++)
+    {
+        tabThread[i] = new scan(i+1);
+    }
+
+    for(int i=0; i<=99; i++)
+    {
+        tabThread[i]->start();
+        Sleep(200);
+    }
+
+    return a.exec();
 }

@@ -10,7 +10,7 @@
 using namespace std;
 
 string scan::getMACOutput(string nomNetbios) {
-    // Open a pipe for reading the command output
+    // Ouverture d'un pipe "sous-processus" pour lire la sortie de la commande
     string cmd = "nbtstat -a " + nomNetbios;
     FILE* pipe = popen(cmd.c_str(), "r");
     if (!pipe) {
@@ -20,19 +20,19 @@ string scan::getMACOutput(string nomNetbios) {
     string result;
     char buffer[128];
     while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-        // Append the read data to the result string
+        // Ajout des données lues à la chaîne de caractères
         result += buffer;
     }
 
-    // Close the pipe and wait for the command to finish
+    // Fermeture du pipe
     int exitCode = pclose(pipe);
 
-    // Check for errors in the command execution
+    // Vérification des erreur lors de l'execution de la commande
     if (exitCode != EXIT_SUCCESS) {
         return "Command failed!";
     }
 
-    // Remove the trailing newline character (optional)
+    // Supprime le caractère de fin de ligne (facultatif)
     if (!result.empty() && result.back() == '\n') {
         result.pop_back();
     }
@@ -64,7 +64,7 @@ vector<pair<string, string>> scan::getIPOutput() {
         string ip, mac;
         iss >> ip >> mac;
 
-        // Converti l'adresse MAC en majuscules pour plus de cohérence
+        // Convertit l'adresse MAC en majuscules pour plus de cohérence
         transform(mac.begin(), mac.end(), mac.begin(), ::toupper);
 
         arpEntries.push_back(make_pair(ip, mac));
@@ -127,9 +127,9 @@ bool scan::scanMACIP(string nomNetbios)
 
     // Réponse finale du résultat de la méthode (Adresse MAC trouvée ou non)
     if (!ipAddress.empty()) {
+        mtx.lock();
         cout << "Computer: " << nomNetbios << " | MAC Address: " << transformed_mac.str() << " | IP Address: " << ipAddress << endl;
         // Tableau à retourner avec mutex
-        mtx.lock();
         string scanMACIPArray[3];
         scanMACIPArray[0] = nomNetbios;
         scanMACIPArray[1] = transformed_mac.str();
@@ -137,35 +137,24 @@ bool scan::scanMACIP(string nomNetbios)
         mtx.unlock();
         return true;
     } else {
+        mtx.lock();
         cout << "No info found about \"" << nomNetbios << "\"" << endl;
+        mtx.unlock();
         return false;
     }
 
 }
 
-scan::scan(int maxPC, string salle) {
-
-
-    int scanError = 0;
-
-    for (int i = 1; i <= maxPC; ++i) {
-        string nomposte;
-        if (i < 10) {
-            nomposte = salle + "-P" + "0" + to_string(i);
-        } else {
-            nomposte = salle + "-P" + to_string(i);
-        }
-
-        if (!scanMACIP(nomposte)) {
-            scanError++;
-            if (scanError >= 3) {
-                cout << "Scanning has failed three times. Terminating program." << endl;
-                i = maxPC;
-            }
-        }
-        else {
-            scanError = 0;
-        }
-
+void scan::run() {
+    string nomposte;
+    if (PC < 10) {
+        nomposte = salle + "-P" + "0" + to_string(PC);
+    } else {
+        nomposte = salle + "-P" + to_string(PC);
     }
+    scanMACIP(nomposte);
+}
+
+scan::scan(int nPC) {
+    PC = nPC;
 }
