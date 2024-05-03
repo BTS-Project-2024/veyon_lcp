@@ -4,23 +4,13 @@
 #include <cstdlib>
 #include <regex>
 #include <sstream>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 
-scan::scan()
-{
-
-}
-
-
-string scan::getSalle()
-{
-    cout << salle << endl;
-    return salle;
-}
-
 string scan::getMACOutput(string nomNetbios) {
-    // Open a pipe for reading the command output
+    // Ouverture d'un pipe "sous-processus" pour lire la sortie de la commande
     string cmd = "nbtstat -a " + nomNetbios;
     FILE* pipe = popen(cmd.c_str(), "r");
     if (!pipe) {
@@ -30,19 +20,19 @@ string scan::getMACOutput(string nomNetbios) {
     string result;
     char buffer[128];
     while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-        // Append the read data to the result string
+        // Ajout des données lues à la chaîne de caractères
         result += buffer;
     }
 
-    // Close the pipe and wait for the command to finish
+    // Fermeture du pipe
     int exitCode = pclose(pipe);
 
-    // Check for errors in the command execution
+    // Vérification des erreur lors de l'execution de la commande
     if (exitCode != EXIT_SUCCESS) {
         return "Command failed!";
     }
 
-    // Remove the trailing newline character (optional)
+    // Supprime le caractère de fin de ligne (facultatif)
     if (!result.empty() && result.back() == '\n') {
         result.pop_back();
     }
@@ -74,7 +64,7 @@ vector<pair<string, string>> scan::getIPOutput() {
         string ip, mac;
         iss >> ip >> mac;
 
-        // Converti l'adresse MAC en majuscules pour plus de cohérence
+        // Convertit l'adresse MAC en majuscules pour plus de cohérence
         transform(mac.begin(), mac.end(), mac.begin(), ::toupper);
 
         arpEntries.push_back(make_pair(ip, mac));
@@ -85,7 +75,7 @@ vector<pair<string, string>> scan::getIPOutput() {
 }
 
 
-void scan::scanMACIP(string nomNetbios)
+bool scan::scanMACIP(string nomNetbios)
 {
 
     // Commande NBTSTAT avec le nom de l'ordinateur au choix
@@ -124,23 +114,47 @@ void scan::scanMACIP(string nomNetbios)
 
     std::stringstream transformed_mac;
 
-    // Iterate over each character pair and add ":" after each pair
+    // Interroge chaque paire de caractères et ajouter " :" après chaque paire.
     for (unsigned long long i = 0; i < macAddress.length(); i += 3) {
-      transformed_mac << macAddress.substr(i, 2);
-      if (i < macAddress.length() - 2) {
-        transformed_mac << ":";
-      }
+        transformed_mac << macAddress.substr(i, 2);
+        if (i < macAddress.length() - 2) {
+            transformed_mac << ":";
+        }
     }
+
+    // Déclaration de mutex
+    std::mutex mtx;
 
     // Réponse finale du résultat de la méthode (Adresse MAC trouvée ou non)
     if (!ipAddress.empty()) {
-        cout << "Ordinateur: " << nomNetbios << " | Adresse MAC: " << transformed_mac.str() << " | Adresse IP: " << ipAddress << endl;
+        mtx.lock();
+        cout << "Computer: " << nomNetbios << " | MAC Address: " << transformed_mac.str() << " | IP Address: " << ipAddress << endl;
+        // Tableau à retourner avec mutex
+        string scanMACIPArray[3];
+        scanMACIPArray[0] = nomNetbios;
+        scanMACIPArray[1] = transformed_mac.str();
+        scanMACIPArray[2] = ipAddress;
+        mtx.unlock();
+        return true;
     } else {
-        cout << "L'adresse MAC " << transformed_mac.str() << " n'a pas ete trouvee." << endl;
+        mtx.lock();
+        cout << "No info found about \"" << nomNetbios << "\"" << endl;
+        mtx.unlock();
+        return false;
     }
+
 }
 
-void scan::setSalle(string salle)
-{
-    this->salle=salle;
+void scan::run() {
+    string nomposte;
+    if (PC < 10) {
+        nomposte = salle + "-P" + "0" + to_string(PC);
+    } else {
+        nomposte = salle + "-P" + to_string(PC);
+    }
+    scanMACIP(nomposte);
+}
+
+scan::scan(int nPC) {
+    PC = nPC;
 }

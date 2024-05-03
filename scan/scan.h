@@ -3,25 +3,27 @@
 #include <string>
 #include <iostream>
 #include <regex>
+#include <QThread>
+#include <atomic>
 
 using namespace std;
 
-class scan
+class scan : public QThread
 {
 private:
-    string salle;
-    string* list_temp;
-    string* list_salle;
-    string nomNetbios;
-    bool endScan;
+    int PC = 1;
+    int PCMax = 50;
+    string salle = "A402";
+    string** list_temp;
     string getMACOutput(string nomNetbios);
     vector<pair<string, string>> getIPOutput();
+    void executeScan();
+
 public:
-    scan();
+    scan(int nPC);
     string getSalle();
-    void scanMACIP(string salle);
-    string sendRequete(string nomNetBios);
-    void setSalle(string salle);
+    bool scanMACIP(string salle);
+    void run();
 };
 
 #endif // SCAN_H
