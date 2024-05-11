@@ -6,6 +6,7 @@
 #include <sstream>
 #include <thread>
 #include <mutex>
+#include <vector>
 
 using namespace std;
 
@@ -66,7 +67,6 @@ vector<pair<string, string>> scan::getIPOutput() {
 
         // Convertit l'adresse MAC en majuscules pour plus de cohérence
         transform(mac.begin(), mac.end(), mac.begin(), ::toupper);
-
         arpEntries.push_back(make_pair(ip, mac));
     }
 
@@ -145,16 +145,37 @@ bool scan::scanMACIP(string nomNetbios)
 
 }
 
-void scan::run() {
+void scan::run_scan(int PC) {
+    // Initialisation du nom du poste à scanner
     string nomposte;
+    // Formatage du nom du poste selon le numéro du PC
     if (PC < 10) {
         nomposte = salle + "-P" + "0" + to_string(PC);
     } else {
         nomposte = salle + "-P" + to_string(PC);
     }
+    // On lance la méthode principale du scan avec le bon nom de poste
     scanMACIP(nomposte);
 }
 
-scan::scan(int nPC) {
-    PC = nPC;
+void scan::run_tscan() {
+    // Démarrage du Thread Pool
+    ThreadScan.Start();
+    // Numéro du poste
+    int PC = 1;
+    // On génére le ThreadPool avec les 99 PC à scanner
+    while (PC<100) {
+        // cout << PC << endl; A servi au debug
+        ThreadScan.QueueJob([this,PC]{run_scan(PC);});
+        PC++;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Attendre un peu avant de revérifier
+    }
+    // On met le programme en attente tant que le threadpool n'est pas terminé
+    do {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        // cout << ThreadScan.busy() << endl; A servi au debug
+    }
+    while (ThreadScan.busy());
+    // Scan en multithreading terminé
+    ThreadScan.Stop();
 }
