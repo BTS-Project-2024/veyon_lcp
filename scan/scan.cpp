@@ -10,6 +10,14 @@
 
 using namespace std;
 
+void scan::clean_tab() {
+    for (int i=incTab; i<50 ; i++) {
+        for (int j=0; j<3; j++) {
+            list_temp[i][j] = "";
+        }
+    }
+}
+
 string scan::getMACOutput(string nomNetbios) {
     // Ouverture d'un pipe "sous-processus" pour lire la sortie de la commande
     string cmd = "nbtstat -a " + nomNetbios;
@@ -122,18 +130,17 @@ bool scan::scanMACIP(string nomNetbios)
         }
     }
 
-    // Déclaration de mutex
-    std::mutex mtx;
-
+    // Transformation du char array mac en string
+    string smac_address = transformed_mac.str();
     // Réponse finale du résultat de la méthode (Adresse MAC trouvée ou non)
     if (!ipAddress.empty()) {
         mtx.lock();
-        cout << "Computer: " << nomNetbios << " | MAC Address: " << transformed_mac.str() << " | IP Address: " << ipAddress << endl;
-        // Tableau à retourner avec mutex
-        string scanMACIPArray[3];
-        scanMACIPArray[0] = nomNetbios;
-        scanMACIPArray[1] = transformed_mac.str();
-        scanMACIPArray[2] = ipAddress;
+        cout << "Computer: " << nomNetbios << " | MAC Address: " << smac_address << " | IP Address: " << ipAddress << endl;
+        list_temp[incTab][0] = nomNetbios;
+        list_temp[incTab][1] = smac_address;
+        list_temp[incTab][2] = ipAddress;
+        cout << incTab << endl;
+        incTab++;
         mtx.unlock();
         return true;
     } else {
@@ -143,6 +150,18 @@ bool scan::scanMACIP(string nomNetbios)
         return false;
     }
 
+}
+
+void scan::getTab() {
+    // Declaring array
+    for(int a = 0; a < 50; a++)
+    {
+      for(int b = 0; b < 3; b++)
+      {
+        cout << list_temp[a][b] << " ";
+      }
+      cout << endl;
+    }
 }
 
 void scan::run_scan(int PC) {
@@ -164,7 +183,7 @@ void scan::run_tscan() {
     // Numéro du poste
     int PC = 1;
     // On génére le ThreadPool avec les 99 PC à scanner
-    while (PC<100) {
+    while (PC<51) {
         // cout << PC << endl; A servi au debug
         ThreadScan.QueueJob([this,PC]{run_scan(PC);});
         PC++;
@@ -178,4 +197,6 @@ void scan::run_tscan() {
     while (ThreadScan.busy());
     // Scan en multithreading terminé
     ThreadScan.Stop();
+    clean_tab();
+
 }

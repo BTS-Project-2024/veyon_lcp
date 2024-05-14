@@ -15,11 +15,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        config.cpp \
+        csv.cpp \
         main.cpp \
         scan.cpp \
         threadpool.cpp
 
 HEADERS += \
+        config.h \
+        csv.h \
         scan.h \
         threadpool.h
 
