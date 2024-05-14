@@ -5,25 +5,23 @@
 #include <regex>
 #include <QThread>
 #include <atomic>
+#include <threadpool.h>
 
 using namespace std;
 
-class scan : public QThread
+class scan : public thread
 {
 private:
-    int PC = 1;
-    int PCMax = 50;
+    ThreadPool ThreadScan;
     string salle = "A402";
     string** list_temp;
     string getMACOutput(string nomNetbios);
     vector<pair<string, string>> getIPOutput();
-    void executeScan();
-
-public:
-    scan(int nPC);
-    string getSalle();
     bool scanMACIP(string salle);
-    void run();
+    void run_scan(int PC);
+public:
+    string getSalle();
+    void run_tscan();
 };
 
 #endif // SCAN_H
