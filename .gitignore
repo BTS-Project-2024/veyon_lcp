@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Other
+*.7z
+
+# Build folders
+build*/
