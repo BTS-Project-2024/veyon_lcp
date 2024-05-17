@@ -10,6 +10,13 @@
 
 using namespace std;
 
+scan::scan() {
+    list_temp = new string*[50];
+    for(int i=0; i<50; i++)
+        list_temp[i] = new string[3];
+
+}
+
 void scan::clean_tab() {
     for (int i=incTab; i<50 ; i++) {
         for (int j=0; j<3; j++) {
@@ -152,7 +159,7 @@ bool scan::scanMACIP(string nomNetbios)
 
 }
 
-void scan::getTab() {
+string** scan::getTab() {
     // Declaring array
     for(int a = 0; a < 50; a++)
     {
@@ -162,6 +169,9 @@ void scan::getTab() {
       }
       cout << endl;
     }
+
+    return this->list_temp;
+
 }
 
 void scan::run_scan(int PC) {
