@@ -10,7 +10,16 @@
 
 using namespace std;
 
+scan::scan() {
+    // Initialisation du tableau
+    list_temp = new string*[50];
+    for(int i=0; i<50; i++)
+        list_temp[i] = new string[3];
+
+}
+
 void scan::clean_tab() {
+    // Permet d'ajouter des cases vides après la liste finie de postes detectés
     for (int i=incTab; i<50 ; i++) {
         for (int j=0; j<3; j++) {
             list_temp[i][j] = "";
@@ -59,6 +68,7 @@ vector<pair<string, string>> scan::getIPOutput() {
         return arpEntries;
     }
 
+    // On définit un buffer pour la sortie de la commande arp
     char buffer[128];
     while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
         string line(buffer);
@@ -78,6 +88,7 @@ vector<pair<string, string>> scan::getIPOutput() {
         arpEntries.push_back(make_pair(ip, mac));
     }
 
+    // On ferme le sous processus cmd
     _pclose(pipe);
     return arpEntries;
 }
@@ -134,16 +145,20 @@ bool scan::scanMACIP(string nomNetbios)
     string smac_address = transformed_mac.str();
     // Réponse finale du résultat de la méthode (Adresse MAC trouvée ou non)
     if (!ipAddress.empty()) {
+        // On lock avec le mutex pour ne pas interferer avec d'autres threads
         mtx.lock();
         cout << "Computer: " << nomNetbios << " | MAC Address: " << smac_address << " | IP Address: " << ipAddress << endl;
+        // On inscrit les informations dans le tableau puis on incrémente la ligne du tableau pour le thread suivant
         list_temp[incTab][0] = nomNetbios;
         list_temp[incTab][1] = smac_address;
         list_temp[incTab][2] = ipAddress;
         cout << incTab << endl;
         incTab++;
+        // On débloque le mutex puis on retourne une réponse booléenne true pour dire que le scan est correct
         mtx.unlock();
         return true;
     } else {
+        // Si on a pas d'info, alors, on retourne false
         mtx.lock();
         cout << "No info found about \"" << nomNetbios << "\"" << endl;
         mtx.unlock();
@@ -152,8 +167,8 @@ bool scan::scanMACIP(string nomNetbios)
 
 }
 
-void scan::getTab() {
-    // Declaring array
+string** scan::getTab() {
+    /* A servi au debug
     for(int a = 0; a < 50; a++)
     {
       for(int b = 0; b < 3; b++)
@@ -162,6 +177,10 @@ void scan::getTab() {
       }
       cout << endl;
     }
+    */
+    // On retourne le tableau de la liste des PC scannés
+    return this->list_temp;
+
 }
 
 void scan::run_scan(int PC) {

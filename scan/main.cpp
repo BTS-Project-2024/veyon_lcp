@@ -12,6 +12,7 @@ using namespace std;
 int main() {
     scan testscan;
     testscan.run_tscan();
-    testscan.getTab();
+    CSV testcsv;
+    testcsv.createCSVConfig(testscan.getTab());
     return 0;
 }
