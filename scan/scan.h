@@ -4,7 +4,6 @@
 #include <iostream>
 #include <regex>
 #include <QThread>
-#include <atomic>
 #include <threadpool.h>
 
 using namespace std;
@@ -18,12 +17,13 @@ private:
     string** list_temp;
     string getMACOutput(string nomNetbios);
     vector<pair<string, string>> getIPOutput();
-    bool scanMACIP(string salle);
+    bool scanMACIP(string nomNetbios);
     void run_scan(int PC);
     void clean_tab();
     mutex mtx;
 public:
     scan();
+    void setSalle();
     string getSalle();
     string** getTab();
     void run_tscan();

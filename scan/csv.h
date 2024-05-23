@@ -22,6 +22,7 @@ public:
     string getDlPath();
     string genFilename();
 
+    string** sortTab(string**);             // Vérifie que le tableau du scan est ordonné
     string** ordRegex(int*, string**);      // Rempli le tableau de config avec le regex
     string** CSVtoTab(string);              // Convertis un .csv en un tableau
 

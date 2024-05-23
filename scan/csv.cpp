@@ -206,7 +206,7 @@ void CSV::createCSVConfig(string** tableau) {
 
     int size = getLenght(tableau);                  // Récupère la taille du tableau
 
-    for (int i = 0; i < size; ++i) {                // Inscris les données du tableau dans le fichier .csv
+    for (int i = 0; i < size; ++i) {               // Inscris les données du tableau dans le fichier .csv
         for (int j = 0; j < 3; ++j) {
             file << tableau[i][j];
             if (j < 2)
@@ -231,4 +231,45 @@ void CSV::reader(string chemin){
             cout << ligne << endl;
 
     fichier.close();
+}
+
+// - Ordonne un tableau trié
+string** CSV::sortTab(string** tableauA) {
+
+    int len = sizeof(tableauA) / sizeof(tableauA[0]);       // Calcule la longueur du tableau
+    bool sorted = false;
+    int nb = 0;
+
+    string** sortedTabA = new string*[len];                                                // Tableau pour stocker les valeurs triées
+    for (int i = 0; i < len; ++i)
+        sortedTabA[i] = new string[3] {tableauA[i][0], tableauA[i][1], tableauA[i][2]};  // Copie tableauA dans sortedTabA pour le tri
+
+while (sorted==false) {
+    for (int i = 0; i < len - 1; ++i) {                     // Parcours tout le tableau
+        int posteI = getNbPoste(sortedTabA[i][0]);          // Récupère le numéro de poste i et i+1
+        int posteII = getNbPoste(sortedTabA[i+1][0]);       //x
+
+        if (posteI > posteII) {                             // Si le n° de poste i est plus grand que le n° poste i+1
+            // Echange de leur place dans le tableau
+            string tempLine0 = sortedTabA[i][0];
+            string tempLine1 = sortedTabA[i][1];
+            string tempLine2 = sortedTabA[i][2];
+
+            sortedTabA[i][0] = sortedTabA[i+1][0];
+            sortedTabA[i][1] = sortedTabA[i+1][1];
+            sortedTabA[i][2] = sortedTabA[i+1][2];
+
+            sortedTabA[i+1][0] = tempLine0;
+            sortedTabA[i+1][1] = tempLine1;
+            sortedTabA[i+1][2] = tempLine2;
+
+            nb++;                                           // Incrémente de 1 le nombre de changements
+        }
+    }
+    if (nb == 0)                                            // Si le nombre de changement est nul, le tri s'arrête
+        sorted = true;
+    else
+        nb = 0;                                             // Réinitialisation du nombre de changement à chaque tour
+}
+return sortedTabA;
 }
