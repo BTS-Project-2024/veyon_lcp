@@ -1,18 +1,12 @@
-#include <QCoreApplication>
-#include <iostream>
-#include <thread>
-#include <windows.h>
 #include "scan.h"
-#include "csv.h"
-#include "config.h"
+#include "ihm.h"
 
-using namespace std;
+#include <QApplication>
 
-
-int main() {
-    scan testscan;
-    testscan.run_tscan();
-    CSV testcsv;
-    testcsv.createCSVConfig(testscan.getTab());
-    return 0;
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    ihm w;
+    w.show();
+    return a.exec();
 }

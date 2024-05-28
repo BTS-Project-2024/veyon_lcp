@@ -16,6 +16,8 @@ scan::scan() {
     for(int i=0; i<50; i++)
         list_temp[i] = new string[3];
 
+    string salle;
+
 }
 
 void scan::clean_tab() {
@@ -219,3 +221,11 @@ void scan::run_tscan() {
     clean_tab();
 
 }
+
+//void setSalle(const std::string& newSalle) {
+//    salle = newSalle;
+//}
+
+//string getSalle() {
+//    return salle;
+//}
