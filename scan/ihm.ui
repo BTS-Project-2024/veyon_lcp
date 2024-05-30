@@ -10,8 +10,17 @@
     <height>589</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <family>Bahnschrift SemiLight</family>
+   </font>
+  </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Veyon CONFIG LCP</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../../../Downloads/LCP Logo.png</normaloff>../../../Downloads/LCP Logo.png</iconset>
   </property>
   <widget class="QTextEdit" name="logsText">
    <property name="geometry">
@@ -21,6 +30,14 @@
      <width>381</width>
      <height>301</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+    </font>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QPushButton" name="importButton">
@@ -85,7 +102,7 @@ fichier CSV</string>
   <widget class="QLabel" name="logoveyon">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>10</y>
      <width>81</width>
      <height>81</height>

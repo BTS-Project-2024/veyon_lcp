@@ -5,6 +5,7 @@
 #include <regex>
 #include <QThread>
 #include <threadpool.h>
+#include "ihm.h"
 
 using namespace std;
 
@@ -12,6 +13,7 @@ class scan : public thread
 {
 private:
     ThreadPool ThreadScan;
+    Ui::ihm* IHM;
     string salle;
     int incTab=0;
     string** list_temp;
@@ -22,8 +24,8 @@ private:
     void clean_tab();
     mutex mtx;
 public:
-    scan();
-    void setSalle(string fsalle);
+    scan(Ui::ihm*);
+    void setSalle(string);
     string getSalle();
     string** getTab();
     void run_tscan();

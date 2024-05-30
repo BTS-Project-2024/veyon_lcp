@@ -7,16 +7,17 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <QDebug>
 
 using namespace std;
 
-scan::scan() {
+scan::scan(Ui::ihm* uiConstructor) {
     // Initialisation du tableau
     list_temp = new string*[50];
     for(int i=0; i<50; i++)
         list_temp[i] = new string[3];
 
-    string salle;
+    IHM = uiConstructor;
 
 }
 
@@ -149,12 +150,13 @@ bool scan::scanMACIP(string nomNetbios)
     if (!ipAddress.empty()) {
         // On lock avec le mutex pour ne pas interferer avec d'autres threads
         mtx.lock();
-        cout << "Computer: " << nomNetbios << " | MAC Address: " << smac_address << " | IP Address: " << ipAddress << endl;
+        qDebug() << "Computer: " << QString::fromStdString(nomNetbios) << " | MAC Address: " << QString::fromStdString(smac_address) << " | IP Address: " << QString::fromStdString(ipAddress) << endl;
         // On inscrit les informations dans le tableau puis on incrémente la ligne du tableau pour le thread suivant
         list_temp[incTab][0] = nomNetbios;
         list_temp[incTab][1] = smac_address;
         list_temp[incTab][2] = ipAddress;
-        cout << incTab << endl;
+        IHM->TextEditLogs->setText(TextEditLogs->toPlainText() + "[Veyon Scan LCP] Ordinateur trouvé: " + QString::fromStdString(nomNetbios) + " | " + QString::fromStdString(smac_address) + " | " + QString::fromStdString(ipAddress) + "\n");
+        // cout << incTab << endl;<
         incTab++;
         // On débloque le mutex puis on retourne une réponse booléenne true pour dire que le scan est correct
         mtx.unlock();
@@ -162,7 +164,8 @@ bool scan::scanMACIP(string nomNetbios)
     } else {
         // Si on a pas d'info, alors, on retourne false
         mtx.lock();
-        cout << "No info found about \"" << nomNetbios << "\"" << endl;
+        qDebug() << "No info found about \"" << QString::fromStdString(nomNetbios) << "\"" << endl;
+        IHM->TextEditLogs->setText(TextEditLogs->toPlainText() + "[Veyon Scan LCP] Ordinateur introuvable: " + QString::fromStdString(nomNetbios) + "\n");
         mtx.unlock();
         return false;
     }
@@ -222,10 +225,10 @@ void scan::run_tscan() {
 
 }
 
-//void setSalle(const std::string& newSalle) {
-//    salle = newSalle;
-//}
+void scan::setSalle(string newSalle) {
+    salle = newSalle;
+}
 
-//string getSalle() {
-//    return salle;
-//}
+string scan::getSalle() {
+    return salle;
+}

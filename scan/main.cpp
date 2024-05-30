@@ -1,5 +1,6 @@
 #include "scan.h"
 #include "ihm.h"
+#include "ui_ihm.h"
 
 #include <QApplication>
 
