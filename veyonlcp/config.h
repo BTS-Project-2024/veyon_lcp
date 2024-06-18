@@ -12,12 +12,12 @@ private:
     string ip;
     string mac;
     string salle;
-    string executePowerShellCommand(const char* command);
     string getCurrentDateTime();
+    void deleteConfigVeyon();
 
 public:
     Config();
-    void ConfigVeyon();
+    void configVeyon(string, string);
 };
 
 #endif // CONFIG_H
