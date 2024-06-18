@@ -10,24 +10,25 @@
 
 using namespace std;
 
-scan::scan() {
-    // Initialisation du tableau
-    list_temp = new string*[50];
-    for(int i=0; i<50; i++)
-        list_temp[i] = new string[3];
+Scan::Scan() {
 
 }
 
-void scan::clean_tab() {
+void Scan::clean_tab() {
     // Permet d'ajouter des cases vides après la liste finie de postes detectés
-    for (int i=incTab; i<50 ; i++) {
+    // Initialisation du tableau
+    list_pc = new string*[incTab];
+    for(int i=0; i<incTab; i++)
+        list_pc[i] = new string[3];
+
+    for (int i=0; i<incTab ; i++) {
         for (int j=0; j<3; j++) {
-            list_temp[i][j] = "";
+            list_pc[i][j] = list_temp[i][j];
         }
     }
 }
 
-string scan::getMACOutput(string nomNetbios) {
+string Scan::getMACOutput(string nomNetbios) {
     // Ouverture d'un pipe "sous-processus" pour lire la sortie de la commande
     string cmd = "nbtstat -a " + nomNetbios;
     FILE* pipe = popen(cmd.c_str(), "r");
@@ -58,7 +59,7 @@ string scan::getMACOutput(string nomNetbios) {
     return result;
 }
 
-vector<pair<string, string>> scan::getIPOutput() {
+vector<pair<string, string>> Scan::getIPOutput() {
     vector<pair<string, string>> arpEntries;
 
     // Execute la commande "arp -a" et capture sa sortie
@@ -94,7 +95,7 @@ vector<pair<string, string>> scan::getIPOutput() {
 }
 
 
-bool scan::scanMACIP(string nomNetbios)
+bool Scan::scanMACIP(string nomNetbios)
 {
 
     // Commande NBTSTAT avec le nom de l'ordinateur au choix
@@ -147,12 +148,12 @@ bool scan::scanMACIP(string nomNetbios)
     if (!ipAddress.empty()) {
         // On lock avec le mutex pour ne pas interferer avec d'autres threads
         mtx.lock();
-        cout << "Computer: " << nomNetbios << " | MAC Address: " << smac_address << " | IP Address: " << ipAddress << endl;
+        cout << "[Scan] Ordinateur: " << nomNetbios << " | Adresse MAC: " << smac_address << " | Adresse IP: " << ipAddress << endl;
         // On inscrit les informations dans le tableau puis on incrémente la ligne du tableau pour le thread suivant
         list_temp[incTab][0] = nomNetbios;
         list_temp[incTab][1] = smac_address;
         list_temp[incTab][2] = ipAddress;
-        cout << incTab << endl;
+        // cout << incTab << endl;
         incTab++;
         // On débloque le mutex puis on retourne une réponse booléenne true pour dire que le scan est correct
         mtx.unlock();
@@ -160,14 +161,14 @@ bool scan::scanMACIP(string nomNetbios)
     } else {
         // Si on a pas d'info, alors, on retourne false
         mtx.lock();
-        cout << "No info found about \"" << nomNetbios << "\"" << endl;
+        cout << "[SCAN] Pas d'info pour le poste: \"" << nomNetbios << "\"" << endl;
         mtx.unlock();
         return false;
     }
 
 }
 
-string** scan::getTab() {
+string** Scan::getTab() {
     /* A servi au debug
     for(int a = 0; a < 50; a++)
     {
@@ -179,11 +180,11 @@ string** scan::getTab() {
     }
     */
     // On retourne le tableau de la liste des PC scannés
-    return this->list_temp;
+    return this->list_pc;
 
 }
 
-void scan::run_scan(int PC) {
+void Scan::run_scan(int PC) {
     // Initialisation du nom du poste à scanner
     string nomposte;
     // Formatage du nom du poste selon le numéro du PC
@@ -196,7 +197,7 @@ void scan::run_scan(int PC) {
     scanMACIP(nomposte);
 }
 
-void scan::run_tscan() {
+void Scan::run_tscan() {
     // Démarrage du Thread Pool
     ThreadScan.Start();
     // Numéro du poste
@@ -216,6 +217,19 @@ void scan::run_tscan() {
     while (ThreadScan.busy());
     // Scan en multithreading terminé
     ThreadScan.Stop();
+    cout << "Scan termine" << endl;
     clean_tab();
 
+}
+
+void Scan::setSalle(string newSalle) {
+    salle = newSalle;
+}
+
+string Scan::getSalle() {
+    return salle;
+}
+
+int Scan::getTabSize() {
+    return incTab;
 }

@@ -7,7 +7,7 @@
 #include <iomanip>
 
 #include "csv.h"
-
+// TEST VERSION
 using namespace std;
 
 // - Réinitialise le curseur de lecture du fichier
@@ -87,20 +87,14 @@ int CSV::getNbColonnes(ifstream& fichier){
     return colonnes;
 }
 
-
-// Calcule la longueur d'un tableau de pointeur
-int CSV::getLenght(string** tab){
-    int size = 0;                                   // Calcule la taille du tableau
-    while (tab[size] != nullptr)                    // Incrémente 'size' jusqu'à arriver au pointeur nul
-        size++;
-
-    return size;
-}
-
-
 // Lit un fichier .csv externe et le stocke dans un tableau
 string** CSV::CSVtoTab(string chemin){
     ifstream fichier(chemin);
+
+    if (fichier.is_open())
+        cout << "[CSV] File is open" << endl;
+    if(not fichier.is_open())
+        cout << "[CSV] File isn't open" << endl;
 
     string ligne;
     string temp_case;
@@ -136,6 +130,7 @@ string** CSV::CSVtoTab(string chemin){
         }
     }
     fichier.close();
+
     return newTab;
 }
 
@@ -145,7 +140,7 @@ int* CSV::detectRegex(string chemin){
 
     ifstream csvFile(chemin);
 
-    regex netbios_regex("[A-E]{1}[0-9]{3}-P[0-9]{2}");
+    regex netbios_regex("[A-M]{1}[0-9]{3}-P[0-9]{2}");
     regex ip_regex("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
     regex mac_regex("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$");
 
@@ -153,7 +148,7 @@ int* CSV::detectRegex(string chemin){
     int lineCount = 0;
     int* regexTab = new int[3];
 
-    while (getline(csvFile, line)) {                        // Analyse chaque ligne du .csv
+    if (getline(csvFile, line)) { // Lit uniquement la première ligne du fichier
         lineCount++;
         string delimiter;
         if (getline(csvFile, delimiter, ';')) {
@@ -161,9 +156,7 @@ int* CSV::detectRegex(string chemin){
             stringstream ss(line);
             string value;
 
-            while (getline(ss, value, ';')) {               // Pour chaque ligne du .csv, vérifie la compatibilité entre chaque case et les regex
-                col++;
-
+            while (getline(ss, value, ';')) {
                 if (regex_match(value, netbios_regex))
                     regexTab[0] = col;
 
@@ -172,17 +165,19 @@ int* CSV::detectRegex(string chemin){
 
                 else if (regex_match(value,ip_regex ))
                     regexTab[2] = col;
+
+                col++;
             }
         }
     }
+
     return regexTab;
 }
 
 
-// Rempli le tableau de config après lecture du .csv fourni
-string** CSV::ordRegex(int* regexTab, string** tabToOrder){
 
-    int size = getLenght(tabToOrder);                       // Calcule la taille du tableau
+// Rempli le tableau de config après lecture du .csv fourni
+string** CSV::ordRegex(int* regexTab, string** tabToOrder, int size){
 
     string** orderedTab = new string*[size];                // Déclare un tableau de taille len x 3
     for(int i=0; i<size; i++)
@@ -196,17 +191,16 @@ string** CSV::ordRegex(int* regexTab, string** tabToOrder){
 }
 
 // - Sauvegarde le tableau dans un fichier .csv
-void CSV::createCSVConfig(string** tableau) {
-
+string CSV::createCSVConfig(string** tableau, int size) {
     string dl_path = getDlPath();                   // Récupère l'emplacement de téléchargement
     string name = genFilename();                    // Génère le nom du fichier
     string filename = dl_path+name+".csv";
 
     ofstream file(filename);                        // Créé un fichier .csv dans l'emplacement spécifié
 
-    int size = getLenght(tableau);                  // Récupère la taille du tableau
+    // int size = 50; //Adrien t'as fait n'imp      // getLenght(tableau);                  // Récupère la taille du tableau
 
-    for (int i = 0; i < size; ++i) {               // Inscris les données du tableau dans le fichier .csv
+    for (int i = 0; i < size; ++i) {                // Inscris les données du tableau dans le fichier .csv
         for (int j = 0; j < 3; ++j) {
             file << tableau[i][j];
             if (j < 2)
@@ -217,6 +211,8 @@ void CSV::createCSVConfig(string** tableau) {
 
     cout << "Sauvegarde : 200" << endl;
     file.close();
+
+    return filename;
 }
 
 
@@ -234,9 +230,8 @@ void CSV::reader(string chemin){
 }
 
 // - Ordonne un tableau trié
-string** CSV::sortTab(string** tableauA) {
+string** CSV::sortTab(string** tableauA, int len) {
 
-    int len = sizeof(tableauA) / sizeof(tableauA[0]);       // Calcule la longueur du tableau
     bool sorted = false;
     int nb = 0;
 
